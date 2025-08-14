@@ -75,6 +75,7 @@ function Inspiration() {
     setInspirations(inspirations.filter(inspiration => inspiration.id !== id));
   };
 
+  
   // 格式化时间显示
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleString();
@@ -87,6 +88,9 @@ function Inspiration() {
       addInspiration();
     }
   };
+
+  // 计算灵感统计
+  const totalInspirations = inspirations.length;
 
   return (
     <div className="inspiration">
@@ -125,6 +129,17 @@ function Inspiration() {
           Add
         </button>
       </div>
+      
+      {totalInspirations > 0 && (
+        <div style={{ 
+          textAlign: 'left',
+          marginBottom: '10px',
+          fontSize: '14px',
+          color: 'rgba(255, 255, 255, 0.8)'
+        }}>
+          <span>{totalInspirations} inspiration{totalInspirations !== 1 ? 's' : ''}</span>
+        </div>
+      )}
       <ul style={{ 
         listStyle: 'none', 
         padding: 0, 
@@ -132,7 +147,16 @@ function Inspiration() {
         maxHeight: '200px',
         overflowY: 'auto'
       }}>
-        {inspirations.map(inspiration => (
+        {inspirations.length === 0 ? (
+          <li style={{ 
+            padding: '20px', 
+            textAlign: 'center', 
+            color: 'rgba(255, 255, 255, 0.6)' 
+          }}>
+            No inspirations yet. Add a new inspiration to get started!
+          </li>
+        ) : (
+          inspirations.map(inspiration => (
           <li 
             key={inspiration.id} 
             style={{ 
@@ -145,6 +169,14 @@ function Inspiration() {
                 <textarea
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      saveEdit(inspiration.id);
+                    } else if (e.key === 'Escape') {
+                      cancelEdit();
+                    }
+                  }}
                   style={{
                     padding: '8px',
                     borderRadius: '4px',
@@ -238,7 +270,8 @@ function Inspiration() {
               </div>
             )}
           </li>
-        ))}
+        ))
+      )}
       </ul>
     </div>
   );
