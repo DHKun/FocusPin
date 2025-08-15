@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import ModernCheckbox from './ModernCheckbox';
+import TimestampDisplay from './TimestampDisplay';
 
 interface TodoItem {
   id: string;
@@ -72,9 +74,11 @@ function TodoList() {
 
   // 保存编辑的任务
   const saveEdit = (id: string) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, text: editValue } : todo
-    ));
+    if (editValue.trim()) {
+      setTodos(todos.map(todo => 
+        todo.id === id ? { ...todo, text: editValue.trim() } : todo
+      ));
+    }
     setIsEditing(null);
     setEditValue('');
   };
@@ -90,11 +94,6 @@ function TodoList() {
     setTodos(todos.filter(todo => !todo.completed));
   };
 
-  // 格式化时间显示
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleString();
-  };
-
   // 处理输入框按键事件
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -108,62 +107,73 @@ function TodoList() {
   const pendingTasks = totalTasks - completedTasks;
 
   return (
-    <div className="todo-list">
-      <h2>Tasks</h2>
-      <div className="todo-input">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Add a new task..."
-          style={{
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid var(--border-color)',
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'var(--text-color)',
-            width: '70%',
-            marginRight: '10px'
-          }}
-        />
-        <button 
-          onClick={addTodo}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: 'none',
-            background: 'rgba(255, 255, 255, 0.2)',
-            color: 'var(--text-color)',
-            cursor: 'pointer'
-          }}
-        >
-          Add
-        </button>
+    <div className="todo-container">
+      {/* 任务输入区域 */}
+      <div className="todo-input-container">
+        <div className="input-row">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Add a new task..."
+            className="modern-input"
+            style={{
+              flex: 1,
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              borderRadius: 'var(--spacing-sm)',
+              border: '1px solid var(--glass-border)',
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              fontSize: 'calc(var(--font-size) * 0.9)',
+              outline: 'none',
+              transition: 'var(--transition-fast)'
+            }}
+          />
+          <button 
+            onClick={addTodo}
+            className="add-button"
+            style={{
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              borderRadius: 'var(--spacing-sm)',
+              border: 'none',
+              background: 'var(--text-primary)',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'var(--transition-fast)',
+              marginLeft: 'var(--spacing-sm)',
+              fontWeight: '500'
+            }}
+          >
+            Add
+          </button>
+        </div>
       </div>
       
       {/* 任务统计 */}
       {totalTasks > 0 && (
-        <div style={{ 
+        <div className="todo-stats" style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          marginBottom: '10px',
-          fontSize: '14px',
-          color: 'rgba(255, 255, 255, 0.8)'
+          marginBottom: 'var(--spacing-md)',
+          fontSize: 'calc(var(--font-size) * 0.8)',
+          color: 'var(--text-tertiary)'
         }}>
           <span>{pendingTasks} pending, {completedTasks} completed</span>
           {completedTasks > 0 && (
             <button 
               onClick={clearCompleted}
+              className="clear-button"
               style={{
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: 'none',
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'var(--text-color)',
+                padding: 'var(--spacing-xs) var(--spacing-sm)',
+                borderRadius: 'var(--spacing-xs)',
+                border: '1px solid var(--text-tertiary)',
+                background: 'transparent',
+                color: 'var(--text-tertiary)',
                 cursor: 'pointer',
-                fontSize: '12px'
+                fontSize: 'calc(var(--font-size) * 0.75)',
+                transition: 'var(--transition-fast)'
               }}
             >
               Clear Completed
@@ -172,44 +182,49 @@ function TodoList() {
         </div>
       )}
       
-      <ul style={{ 
-        listStyle: 'none', 
-        padding: 0, 
-        textAlign: 'left',
-        maxHeight: '200px',
-        overflowY: 'auto'
+      {/* 任务列表 */}
+      <div className="todo-list" style={{ 
+        maxHeight: '300px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }}>
         {todos.length === 0 ? (
-          <li style={{ 
-            padding: '20px', 
+          <div style={{ 
+            padding: 'var(--spacing-2xl)', 
             textAlign: 'center', 
-            color: 'rgba(255, 255, 255, 0.6)' 
+            color: 'var(--text-tertiary)',
+            fontStyle: 'italic'
           }}>
             No tasks yet. Add a new task to get started!
-          </li>
+          </div>
         ) : (
           todos.map(todo => (
-            <li 
+            <div 
               key={todo.id} 
+              className="todo-item fade-in"
               style={{ 
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                padding: 'var(--spacing-md) 0',
+                borderBottom: '1px solid var(--glass-border)',
+                transition: 'var(--transition-normal)'
               }}
             >
               {isEditing === todo.id ? (
                 // 编辑模式
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="edit-mode">
                   <input
                     type="text"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
+                    className="edit-input"
                     style={{
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--border-color)',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'var(--text-color)',
-                      marginBottom: '8px'
+                      width: '100%',
+                      padding: 'var(--spacing-sm)',
+                      borderRadius: 'var(--spacing-xs)',
+                      border: '1px solid var(--text-secondary)',
+                      background: 'var(--glass-bg)',
+                      color: 'var(--text-primary)',
+                      marginBottom: 'var(--spacing-sm)',
+                      outline: 'none'
                     }}
                     autoFocus
                     onKeyDown={(e) => {
@@ -220,17 +235,17 @@ function TodoList() {
                       }
                     }}
                   />
-                  <div>
+                  <div className="edit-actions" style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
                     <button 
                       onClick={() => saveEdit(todo.id)}
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
+                        padding: 'var(--spacing-xs) var(--spacing-sm)',
+                        borderRadius: 'var(--spacing-xs)',
                         border: 'none',
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        color: 'var(--text-color)',
+                        background: 'var(--text-primary)',
+                        color: 'white',
                         cursor: 'pointer',
-                        marginRight: '8px'
+                        fontSize: 'calc(var(--font-size) * 0.8)'
                       }}
                     >
                       Save
@@ -238,12 +253,13 @@ function TodoList() {
                     <button 
                       onClick={cancelEdit}
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        border: 'none',
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        color: 'var(--text-color)',
-                        cursor: 'pointer'
+                        padding: 'var(--spacing-xs) var(--spacing-sm)',
+                        borderRadius: 'var(--spacing-xs)',
+                        border: '1px solid var(--text-tertiary)',
+                        background: 'transparent',
+                        color: 'var(--text-tertiary)',
+                        cursor: 'pointer',
+                        fontSize: 'calc(var(--font-size) * 0.8)'
                       }}
                     >
                       Cancel
@@ -252,71 +268,67 @@ function TodoList() {
                 </div>
               ) : (
                 // 显示模式
-                <div>
+                <div className="display-mode">
                   <div style={{ 
                     display: 'flex', 
-                    alignItems: 'center',
-                    marginBottom: '4px'
+                    alignItems: 'flex-start',
+                    gap: 'var(--spacing-sm)'
                   }}>
-                    <input
-                      type="checkbox"
+                    <ModernCheckbox
                       checked={todo.completed}
                       onChange={() => toggleTodo(todo.id)}
-                      style={{ 
-                        marginRight: '10px',
-                        transform: 'scale(1.2)'
-                      }}
+                      label={todo.text}
                     />
-                    <span 
-                      style={{ 
-                        textDecoration: todo.completed ? 'line-through' : 'none',
-                        flex: 1,
-                        color: todo.completed ? 'rgba(255, 255, 255, 0.6)' : 'var(--text-color)'
-                      }}
-                    >
-                      {todo.text}
-                    </span>
-                    <div>
+                    <div className="todo-actions" style={{ 
+                      marginLeft: 'auto',
+                      display: 'flex',
+                      gap: 'var(--spacing-xs)'
+                    }}>
                       <button 
                         onClick={() => startEditing(todo.id, todo.text)}
+                        className="action-button"
                         style={{
                           background: 'transparent',
                           border: 'none',
-                          color: 'var(--text-color)',
+                          color: 'var(--text-tertiary)',
                           cursor: 'pointer',
                           fontSize: '14px',
-                          marginRight: '8px'
+                          padding: 'var(--spacing-xs)',
+                          borderRadius: 'var(--spacing-xs)',
+                          transition: 'var(--transition-fast)'
                         }}
+                        title="Edit task"
                       >
                         ✏️
                       </button>
                       <button 
                         onClick={() => deleteTodo(todo.id)}
+                        className="action-button delete-button"
                         style={{
                           background: 'transparent',
                           border: 'none',
-                          color: 'var(--text-color)',
+                          color: 'var(--text-tertiary)',
                           cursor: 'pointer',
-                          fontSize: '16px'
+                          fontSize: '16px',
+                          padding: 'var(--spacing-xs)',
+                          borderRadius: 'var(--spacing-xs)',
+                          transition: 'var(--transition-fast)'
                         }}
+                        title="Delete task"
                       >
                         ×
                       </button>
                     </div>
                   </div>
-                  <small style={{ 
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    fontSize: '12px',
-                    marginLeft: '26px'
-                  }}>
-                    {formatTime(todo.createdAt)}
-                  </small>
+                  <div style={{ marginLeft: '26px', marginTop: 'var(--spacing-xs)' }}>
+                    <TimestampDisplay timestamp={todo.createdAt} />
+                  </div>
                 </div>
               )}
-            </li>
+            </div>
           ))
         )}
-      </ul>
+      </div>
     </div>
   );
 }

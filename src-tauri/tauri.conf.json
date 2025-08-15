@@ -1,13 +1,13 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "FocusPin",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "identifier": "com.focuspin.dev",
   "build": {
     "frontendDist": "../dist/src",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devUrl": "http://localhost:3000/src/index.html"
+    "devUrl": "http://localhost:3001/src/index.html"
   },
   "app": {
     "windows": [
@@ -15,14 +15,15 @@
         "title": "FocusPin",
         "width": 350,
         "height": 450,
-        "resizable": true,
+        "resizable": false,
         "fullscreen": false,
-        "alwaysOnTop": true,
+        "alwaysOnTop": false,
         "decorations": false,
-        "transparent": false,
-        "skipTaskbar": false,
+        "transparent": true,
+        "skipTaskbar": true,
         "center": true,
-        "dragDropEnabled": false
+        "dragDropEnabled": false,
+        "visibleOnAllWorkspaces": true
       }
     ],
     "security": {

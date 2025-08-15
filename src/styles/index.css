@@ -1,7 +1,34 @@
 :root {
-  --text-color: #333333;
-  --background-color: rgba(255, 255, 255, 0.85);
-  --border-color: rgba(255, 255, 255, 0.5);
+  /* 统一设计系统 - 符合ui.md要求 */
+  
+  /* 统一大圆角设计 */
+  --glass-radius: 16px;
+  
+  /* 固定透明度玻璃拟态 - 符合ui.md的半透明白色 */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-backdrop: blur(20px) saturate(180%);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.25);
+  
+  /* 间距系统 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  
+  /* 简化的文本层次系统 - 确保在白色玻璃背景上清晰可读 */
+  --text-primary: #000000;    /* 纯黑主文本 - 标题和重要内容 */
+  --text-secondary: #333333;  /* 深灰次要文本 - 普通内容 */
+  --text-tertiary: #666666;   /* 中灰辅助文本 - 时间戳和元数据 */
+  
+  /* 简化的动画系统 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 字体系统 */
   --font-size: 16px;
 }
 
@@ -13,26 +40,111 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  background: transparent;
-  color: var(--text-color);
-  font-size: var(--font-size, 16px);
+  background: transparent; /* 移除假渐变，准备真透明 */
+  color: var(--text-primary);
+  font-size: var(--font-size);
   height: 100vh;
   width: 100vw;
 }
 
+/* 全局美化滚动条 - 适配玻璃拟态设计 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  margin: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.6);
+}
+
 .app {
-  text-align: center;
-  padding: 20px;
+  padding: var(--spacing-xl);
   position: relative;
   height: 100vh;
   width: 100vw;
-  background: var(--background-color);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-lg);
+  overflow-y: auto;
+  background: transparent; /* 确保app背景完全透明 */
+}
+
+/* 毛玻璃卡片基础样式 */
+.glass-card {
+  background: var(--glass-bg);
+  border-radius: var(--glass-radius);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--glass-shadow);
+  padding: var(--spacing-xl);
+  transition: var(--transition-normal);
+  position: relative;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.45);
+}
+
+/* 应用标题区域 */
+.app-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.app-title {
+  font-size: calc(var(--font-size) * 1.5);
+  font-weight: 700; /* 加粗 - 符合ui.md要求 */
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+/* 卡片容器 */
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  flex: 1;
+}
+
+/* 卡片标题样式 */
+.card-title {
+  font-size: calc(var(--font-size) * 1.1);
+  font-weight: 700; /* 加粗 - 符合ui.md要求 */
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  text-align: left;
+}
+
+/* 卡片内容区域 */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .window-controls {
@@ -46,7 +158,7 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 var(--spacing-md);
   box-sizing: border-box;
   -webkit-app-region: drag;
   user-select: none;
@@ -54,11 +166,11 @@ body {
 
 .window-control-button {
   -webkit-app-region: no-drag;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--text-color);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   z-index: 1001;
   width: 30px;
@@ -67,47 +179,379 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-normal);
   pointer-events: auto;
 }
 
 .window-control-button:hover {
-  background: rgba(255, 0, 0, 0.5);
-  border-color: rgba(255, 0, 0, 0.7);
+  background: rgba(229, 62, 62, 0.8);
+  border-color: rgba(229, 62, 62, 1);
   color: white;
 }
 
-h1, p {
-  color: var(--text-color);
+.pin-button:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  opacity: 0.8;
 }
 
-.todo-list, .inspiration {
-  margin-top: 20px;
+/* 时间戳样式 */
+.timestamp {
+  font-size: calc(var(--font-size) * 0.75);
+  color: var(--text-tertiary); /* 使用浅灰色 - 符合ui.md要求 */
+  text-align: right;
+  margin-top: var(--spacing-xs);
 }
 
-.todo-input, .inspiration-input {
+/* 现代化复选框样式 */
+.modern-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-tertiary);
+  border-radius: var(--spacing-xs);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+  margin-right: var(--spacing-sm);
+}
+
+.modern-checkbox:checked {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.modern-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.modern-checkbox:hover {
+  border-color: var(--text-secondary);
+  transform: scale(1.1);
+}
+
+/* 输入框和按钮交互效果 */
+.modern-input:focus,
+.modern-textarea:focus {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(45, 55, 72, 0.1);
+}
+
+.add-button:hover {
+  background: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+.add-button:active {
+  transform: translateY(0);
+}
+
+.clear-button:hover,
+.action-button:hover {
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+}
+
+.delete-button:hover {
+  color: #e53e3e !important;
+  background: rgba(229, 62, 62, 0.1) !important;
+}
+
+/* 复选框容器样式 */
+.modern-checkbox-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.inspiration-input {
   align-items: flex-start;
+  cursor: pointer;
+  flex: 1;
 }
 
-input, textarea, button {
-  font-size: var(--font-size, 16px);
+.checkbox-label {
+  flex: 1;
+  line-height: 1.5;
+  transition: var(--transition-fast);
+  word-break: break-word;
 }
 
-h1 {
-  font-size: calc(var(--font-size, 16px) * 1.5);
+/* 输入行布局 */
+.input-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-md);
 }
 
-h2 {
-  font-size: calc(var(--font-size, 16px) * 1.2);
+/* 基础动画样式 */
+.fade-in {
+  animation: fadeIn var(--transition-normal) ease-out;
 }
 
-h3 {
-  font-size: calc(var(--font-size, 16px) * 1.1);
+.slide-up {
+  animation: slideUp var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 高级动画效果 - 错开动画 */
+.glass-card.slide-up {
+  animation-delay: 0.1s;
+}
+
+.glass-card:nth-child(2).slide-up {
+  animation-delay: 0.2s;
+}
+
+.todo-item,
+.inspiration-item {
+  transform: translateX(0);
+  transition: var(--transition-normal);
+}
+
+.todo-item:hover,
+.inspiration-item:hover {
+  transform: translateX(2px);
+  background: var(--glass-bg);
+  border-radius: var(--spacing-xs);
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
+}
+
+/* 响应式布局优化 */
+@media (max-height: 600px) {
+  .todo-list,
+  .inspiration-list {
+    max-height: 200px;
+  }
+  
+  .app {
+    gap: var(--spacing-sm);
+  }
+  
+  .cards-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .glass-card {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 增强的交互动画效果 */
+
+/* 按钮脉冲效果 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+  }
+}
+
+/* 增强的输入框交互效果 */
+.modern-input:hover,
+.modern-textarea:hover {
+  border-color: rgba(74, 144, 226, 0.4);
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.modern-input:focus,
+.modern-textarea:focus {
+  background: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 0 2px rgba(45, 55, 72, 0.1),
+    0 4px 12px rgba(74, 144, 226, 0.1);
+}
+
+/* 增强的按钮交互效果 */
+.add-button:focus {
+  animation: pulse 1.5s infinite;
+}
+
+.add-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(45, 55, 72, 0.15),
+    0 2px 8px rgba(45, 55, 72, 0.1);
+}
+
+.clear-button:hover,
+.action-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(113, 128, 150, 0.2);
+}
+
+.clear-button:active,
+.action-button:active {
+  transform: scale(0.98);
+}
+
+.delete-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.2);
+}
+
+/* 增强的复选框容器交互 */
+.modern-checkbox-container:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
+  border-radius: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  margin: 0 calc(-1 * var(--spacing-xs));
+}
+
+/* 增强的列表项悬浮效果 */
+.todo-item:hover,
+.inspiration-item:hover {
+  transform: translateX(4px) translateY(-1px);
+  box-shadow: 
+    0 4px 12px rgba(255, 255, 255, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 卡片进入动画增强 */
+.glass-card {
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 增强的响应式布局优化 */
+
+/* 超小窗口适配 (高度 < 500px) */
+@media (max-height: 500px) {
+  .app {
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+  }
+  
+  .app-header {
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .app-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .cards-container {
+    gap: var(--spacing-xs);
+  }
+  
+  .glass-card {
+    padding: var(--spacing-sm);
+  }
+  
+  .todo-list,
+  .inspiration-list {
+    max-height: 120px;
+  }
+}
+
+/* 中等窗口适配 (高度 500-800px) */
+@media (min-height: 500px) and (max-height: 800px) {
+  .todo-list,
+  .inspiration-list {
+    max-height: 200px;
+  }
+  
+  .app {
+    gap: var(--spacing-sm);
+  }
+  
+  .cards-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .glass-card {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 大窗口适配 (高度 > 800px) */
+@media (min-height: 800px) {
+  .todo-list,
+  .inspiration-list {
+    max-height: 350px;
+  }
+  
+  .app {
+    gap: var(--spacing-lg);
+  }
+  
+  .cards-container {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* 窄屏适配 */
+@media (max-width: 280px) {
+  .app {
+    padding: var(--spacing-xs);
+  }
+  
+  .glass-card {
+    padding: var(--spacing-xs);
+  }
+  
+  .input-row {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  
+  .add-button {
+    width: 100%;
+  }
+  
+  .window-controls {
+    gap: var(--spacing-xs);
+  }
+  
+  .app-title {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* 内容适应性优化 */
+.todo-container,
+.inspiration-container {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-list,
+.inspiration-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TimestampDisplay from './TimestampDisplay';
 
 interface InspirationItem {
   id: string;
@@ -57,9 +58,11 @@ function Inspiration() {
 
   // 保存编辑的灵感
   const saveEdit = (id: string) => {
-    setInspirations(inspirations.map(inspiration => 
-      inspiration.id === id ? { ...inspiration, text: editValue } : inspiration
-    ));
+    if (editValue.trim()) {
+      setInspirations(inspirations.map(inspiration => 
+        inspiration.id === id ? { ...inspiration, text: editValue.trim() } : inspiration
+      ));
+    }
     setIsEditing(null);
     setEditValue('');
   };
@@ -75,12 +78,6 @@ function Inspiration() {
     setInspirations(inspirations.filter(inspiration => inspiration.id !== id));
   };
 
-  
-  // 格式化时间显示
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleString();
-  };
-
   // 处理输入框按键事件
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -93,186 +90,220 @@ function Inspiration() {
   const totalInspirations = inspirations.length;
 
   return (
-    <div className="inspiration">
-      <h2>Inspiration</h2>
-      <div className="inspiration-input">
-        <textarea
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Record a new inspiration..."
-          style={{
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid var(--border-color)',
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'var(--text-color)',
-            width: '70%',
-            marginRight: '10px',
-            minHeight: '60px',
-            resize: 'vertical'
-          }}
-        />
-        <button 
-          onClick={addInspiration}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: 'none',
-            background: 'rgba(255, 255, 255, 0.2)',
-            color: 'var(--text-color)',
-            cursor: 'pointer',
-            height: 'fit-content',
-            alignSelf: 'flex-start'
-          }}
-        >
-          Add
-        </button>
+    <div className="inspiration-container">
+      {/* 灵感输入区域 */}
+      <div className="inspiration-input-container">
+        <div className="input-row">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Record a new inspiration..."
+            className="modern-input"
+            style={{
+              flex: 1,
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              borderRadius: 'var(--spacing-sm)',
+              border: '1px solid var(--glass-border)',
+              background: 'var(--glass-bg)',
+              color: 'var(--text-primary)',
+              fontSize: 'calc(var(--font-size) * 0.9)',
+              outline: 'none',
+              transition: 'var(--transition-fast)'
+            }}
+          />
+          <button 
+            onClick={addInspiration}
+            className="add-button"
+            style={{
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              borderRadius: 'var(--spacing-sm)',
+              border: 'none',
+              background: 'var(--text-primary)',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'var(--transition-fast)',
+              marginLeft: 'var(--spacing-sm)',
+              fontWeight: '500',
+              alignSelf: 'flex-start'
+            }}
+          >
+            Add
+          </button>
+        </div>
       </div>
       
+      {/* 灵感统计 */}
       {totalInspirations > 0 && (
-        <div style={{ 
+        <div className="inspiration-stats" style={{ 
           textAlign: 'left',
-          marginBottom: '10px',
-          fontSize: '14px',
-          color: 'rgba(255, 255, 255, 0.8)'
+          marginBottom: 'var(--spacing-md)',
+          fontSize: 'calc(var(--font-size) * 0.8)',
+          color: 'var(--text-tertiary)'
         }}>
           <span>{totalInspirations} inspiration{totalInspirations !== 1 ? 's' : ''}</span>
         </div>
       )}
-      <ul style={{ 
-        listStyle: 'none', 
-        padding: 0, 
-        textAlign: 'left',
-        maxHeight: '200px',
-        overflowY: 'auto'
+      
+      {/* 灵感列表 */}
+      <div className="inspiration-list" style={{ 
+        maxHeight: '300px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }}>
         {inspirations.length === 0 ? (
-          <li style={{ 
-            padding: '20px', 
+          <div style={{ 
+            padding: 'var(--spacing-2xl)', 
             textAlign: 'center', 
-            color: 'rgba(255, 255, 255, 0.6)' 
+            color: 'var(--text-tertiary)',
+            fontStyle: 'italic'
           }}>
             No inspirations yet. Add a new inspiration to get started!
-          </li>
+          </div>
         ) : (
           inspirations.map(inspiration => (
-          <li 
-            key={inspiration.id} 
-            style={{ 
-              padding: '8px 0',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-            }}
-          >
-            {isEditing === inspiration.id ? (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <textarea
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      saveEdit(inspiration.id);
-                    } else if (e.key === 'Escape') {
-                      cancelEdit();
-                    }
-                  }}
-                  style={{
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--border-color)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'var(--text-color)',
-                    marginBottom: '8px',
-                    minHeight: '60px',
-                    resize: 'vertical'
-                  }}
-                  autoFocus
-                />
-                <div>
-                  <button 
-                    onClick={() => saveEdit(inspiration.id)}
+            <div 
+              key={inspiration.id} 
+              className="inspiration-item fade-in"
+              style={{ 
+                padding: 'var(--spacing-md) 0',
+                borderBottom: '1px solid var(--glass-border)',
+                transition: 'var(--transition-normal)'
+              }}
+            >
+              {isEditing === inspiration.id ? (
+                // 编辑模式
+                <div className="edit-mode">
+                  <textarea
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="edit-textarea"
                     style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      border: 'none',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      color: 'var(--text-color)',
-                      cursor: 'pointer',
-                      marginRight: '8px'
+                      width: '100%',
+                      padding: 'var(--spacing-sm)',
+                      borderRadius: 'var(--spacing-xs)',
+                      border: '1px solid var(--text-secondary)',
+                      background: 'var(--glass-bg)',
+                      color: 'var(--text-primary)',
+                      marginBottom: 'var(--spacing-sm)',
+                      outline: 'none',
+                      minHeight: '80px',
+                      resize: 'vertical',
+                      fontFamily: 'inherit'
                     }}
-                  >
-                    Save
-                  </button>
-                  <button 
-                    onClick={cancelEdit}
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      border: 'none',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      color: 'var(--text-color)',
-                      cursor: 'pointer'
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit(inspiration.id);
+                      } else if (e.key === 'Escape') {
+                        cancelEdit();
+                      }
                     }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start'
-                }}>
-                  <p style={{ 
-                    margin: '0 10px 5px 0',
-                    flex: 1,
-                    color: 'var(--text-color)'
-                  }}>
-                    {inspiration.text}
-                  </p>
-                  <div>
+                  />
+                  <div className="edit-actions" style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
                     <button 
-                      onClick={() => startEditing(inspiration.id, inspiration.text)}
+                      onClick={() => saveEdit(inspiration.id)}
                       style={{
-                        background: 'transparent',
+                        padding: 'var(--spacing-xs) var(--spacing-sm)',
+                        borderRadius: 'var(--spacing-xs)',
                         border: 'none',
-                        color: 'var(--text-color)',
+                        background: 'var(--text-primary)',
+                        color: 'white',
                         cursor: 'pointer',
-                        fontSize: '14px',
-                        marginRight: '8px'
+                        fontSize: 'calc(var(--font-size) * 0.8)'
                       }}
                     >
-                      ✏️
+                      Save
                     </button>
                     <button 
-                      onClick={() => deleteInspiration(inspiration.id)}
+                      onClick={cancelEdit}
                       style={{
+                        padding: 'var(--spacing-xs) var(--spacing-sm)',
+                        borderRadius: 'var(--spacing-xs)',
+                        border: '1px solid var(--text-tertiary)',
                         background: 'transparent',
-                        border: 'none',
-                        color: 'var(--text-color)',
+                        color: 'var(--text-tertiary)',
                         cursor: 'pointer',
-                        fontSize: '14px'
+                        fontSize: 'calc(var(--font-size) * 0.8)'
                       }}
                     >
-                      ×
+                      Cancel
                     </button>
                   </div>
                 </div>
-                <small style={{ 
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  fontSize: '12px'
-                }}>
-                  {formatTime(inspiration.createdAt)}
-                </small>
-              </div>
-            )}
-          </li>
-        ))
-      )}
-      </ul>
+              ) : (
+                // 显示模式
+                <div className="display-mode">
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: 'var(--spacing-xs)'
+                  }}>
+                    <div 
+                      className="inspiration-text" 
+                      style={{ 
+                        flex: 1,
+                        color: 'var(--text-secondary)',
+                        lineHeight: '1.5',
+                        marginRight: 'var(--spacing-md)',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word'
+                      }}
+                    >
+                      {inspiration.text}
+                    </div>
+                    <div className="inspiration-actions" style={{ 
+                      display: 'flex',
+                      gap: 'var(--spacing-xs)'
+                    }}>
+                      <button 
+                        onClick={() => startEditing(inspiration.id, inspiration.text)}
+                        className="action-button"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--text-tertiary)',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          padding: 'var(--spacing-xs)',
+                          borderRadius: 'var(--spacing-xs)',
+                          transition: 'var(--transition-fast)'
+                        }}
+                        title="Edit inspiration"
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        onClick={() => deleteInspiration(inspiration.id)}
+                        className="action-button delete-button"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--text-tertiary)',
+                          cursor: 'pointer',
+                          fontSize: '16px',
+                          padding: 'var(--spacing-xs)',
+                          borderRadius: 'var(--spacing-xs)',
+                          transition: 'var(--transition-fast)'
+                        }}
+                        title="Delete inspiration"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <TimestampDisplay timestamp={inspiration.createdAt} />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

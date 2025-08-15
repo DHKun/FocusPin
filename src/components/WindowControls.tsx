@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useWindowPin } from '../hooks/useWindowPin';
 
 interface WindowControlsProps {
   onClose?: () => void;
@@ -7,24 +8,11 @@ interface WindowControlsProps {
 
 function WindowControls({ onClose }: WindowControlsProps) {
   const dragAreaRef = useRef<HTMLDivElement>(null);
-
-  // 启动时设置窗口为置顶
-  useEffect(() => {
-    const setAlwaysOnTop = async () => {
-      try {
-        const appWindow = getCurrentWindow();
-        await appWindow.setAlwaysOnTop(true);
-      } catch (error) {
-        console.error('Failed to set window always on top:', error);
-      }
-    };
-    
-    setAlwaysOnTop();
-  }, []);
+  const { isPinned, isLoading, togglePin } = useWindowPin();
 
   // 处理拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // 确保不是点击关闭按钮
+    // 确保不是点击按钮
     if ((e.target as HTMLElement).tagName !== 'BUTTON') {
       e.preventDefault();
       try {
@@ -51,6 +39,11 @@ function WindowControls({ onClose }: WindowControlsProps) {
       }
     }
   }, [onClose]);
+
+  // 处理Pin按钮点击
+  const handlePinClick = useCallback(async () => {
+    await togglePin();
+  }, [togglePin]);
   
   return (
     <div 
@@ -59,8 +52,21 @@ function WindowControls({ onClose }: WindowControlsProps) {
       onMouseDown={handleMouseDown}
     >
       <button 
+        onClick={handlePinClick}
+        className="window-control-button pin-button"
+        aria-label={isPinned ? "Unpin from desktop" : "Pin to desktop"}
+        disabled={isLoading}
+        style={{
+          fontSize: '16px',
+          opacity: isLoading ? 0.6 : 1,
+          marginRight: '8px'
+        }}
+      >
+        {isPinned ? '📌' : '📍'}
+      </button>
+      <button 
         onClick={handleClose}
-        className="window-control-button"
+        className="window-control-button close-button"
         aria-label="Close"
       >
         ×
