@@ -70,7 +70,7 @@ Runs the Tauri application in development mode.
 3. **Desktop Widget Mode**: Non-intrusive operation, perfect desktop integration
 4. **Unified Input Styling**: Consistent input fields across Ideas and Todo modules
 5. **Custom Scrollbars**: Beautiful scrollbars integrated with glass design
-6. **Vertical Layout**: Ideas on top, Todo on bottom (as per ui.md specification)
+6. **Vertical Layout**: Ideas on top, Todo on bottom
 7. **Enhanced Animations**: Smooth hover effects, focus states, and transitions
 8. **Responsive Design**: Optimized layouts for various window sizes
 9. **Performance Optimized**: Faster builds (~560ms) and smaller CSS footprint
@@ -90,7 +90,7 @@ Palettes are two token blocks: `:root` (light) and `:root[data-theme='dark']`. T
 
 ### Layout Requirements
 - **Critical**: Ideas section MUST be above Todo section (vertical stack)
-- **Transparency**: App background must be fully transparent
+- **Transparency**: App window background must be fully transparent (the `.app` panel carries the material)
 - **Glass Cards**: All content cards use glassmorphism styling
 - **Input Consistency**: Both modules use identical input field styling
 
@@ -130,8 +130,7 @@ src-tauri/           # Tauri v2 backend
 ├── capabilities/    # Enhanced Tauri security capabilities
 ├── icons/           # Application icons
 └── tauri.conf.json  # Enhanced v2 configuration
-ui.md                # Design specification (glassmorphism)
-CHANGELOG.md         # v2.0 detailed changelog
+CHANGELOG.md         # Detailed changelog
 CLAUDE.md            # This file (updated for v2.0)
 ```
 

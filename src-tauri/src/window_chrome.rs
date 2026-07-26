@@ -48,7 +48,7 @@ pub fn apply(app: &mut tauri::App) {
         let window = app
             .get_webview_window("main")
             .expect("main window must exist");
-        // 整窗系统级毛玻璃(ui.md 的视觉核心);圆角与 CSS 的 --glass-radius 一致
+        // 整窗系统级毛玻璃;圆角与 CSS 的 --glass-radius 一致
         if let Err(error) = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(20.0)) {
             log::warn!("Failed to apply vibrancy: {error}");
         }
