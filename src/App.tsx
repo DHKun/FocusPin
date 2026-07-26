@@ -1,36 +1,37 @@
-import { useEffect } from 'react';
 import './styles/index.css';
 import WindowControls from './components/WindowControls';
-import TodoList from './components/TodoList';
-import Inspiration from './components/Inspiration';
+import ItemList from './components/ItemList';
 import GlassCard from './components/GlassCard';
-import { useWindowPin } from './hooks/useWindowPin';
+import { PinIcon } from './components/icons';
 
 function App() {
-  const { restorePinState } = useWindowPin();
-
-  // 应用启动时恢复Pin状态
-  useEffect(() => {
-    restorePinState();
-  }, [restorePinState]);
-
   return (
     <div className="app">
       <WindowControls />
-      
-      <div className="app-header">
-        <h1 className="app-title">
-          📌 FocusPin
-        </h1>
-      </div>
+
+      <header className="app-header">
+        <PinIcon className="app-logo" />
+        <h1 className="app-title">FocusPin</h1>
+      </header>
 
       <div className="cards-container">
-        <GlassCard title="Ideas" animation="slide-up">
-          <Inspiration />
+        <GlassCard title="Ideas" className="card-ideas" animation="slide-up">
+          <ItemList
+            storeKey="inspirations"
+            placeholder="Record a new inspiration..."
+            emptyMessage="No inspirations yet"
+            countNoun="inspiration"
+            multilineEdit
+          />
         </GlassCard>
-        
-        <GlassCard title="To-Do" animation="slide-up">
-          <TodoList />
+
+        <GlassCard title="To-Do" className="card-todo" animation="slide-up">
+          <ItemList
+            storeKey="todos"
+            placeholder="Add a new task..."
+            emptyMessage="No tasks yet"
+            completable
+          />
         </GlassCard>
       </div>
     </div>

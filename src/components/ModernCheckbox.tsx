@@ -29,13 +29,7 @@ function ModernCheckbox({
         disabled={disabled}
       />
       {label && (
-        <span 
-          className={`checkbox-label ${checked ? 'checked' : ''}`}
-          style={{ 
-            textDecoration: checked ? 'line-through' : 'none',
-            color: checked ? 'var(--text-tertiary)' : 'var(--text-secondary)'
-          }}
-        >
+        <span className={`checkbox-label ${checked ? 'checked' : ''}`}>
           {label}
         </span>
       )}

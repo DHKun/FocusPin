@@ -1,63 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { isTauri, usePersistentState } from '../store';
 
+// Pin 状态持久化在 Store 里,窗口同步走 WindowChrome 的 set_pinned 命令。
+// pinSupported=false 表示当前会话(Wayland)下置顶不生效,按钮据此提示。
 export function useWindowPin() {
-  const [isPinned, setIsPinned] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPinned, setIsPinned, ready] = usePersistentState('pinned', false);
+  const [pinSupported, setPinSupported] = useState(true);
 
-  // 初始化时获取当前Pin状态
   useEffect(() => {
-    const initPinState = async () => {
-      try {
-        // Tauri窗口默认不置顶，所以初始状态为false
-        setIsPinned(false);
-      } catch (error) {
-        console.error('Failed to get initial pin state:', error);
-      }
-    };
-    
-    initPinState();
+    if (!isTauri()) {
+      setPinSupported(false);
+      return;
+    }
+    invoke<boolean>('pin_supported')
+      .then(setPinSupported)
+      .catch(() => setPinSupported(true));
   }, []);
 
-  const togglePin = async () => {
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      const newPinState = !isPinned;
-      
-      // 调用Tauri API设置窗口置顶状态
-      await invoke('set_always_on_top', { alwaysOnTop: newPinState });
-      
-      setIsPinned(newPinState);
-      
-      // 保存状态到localStorage
-      localStorage.setItem('focuspin-pinned', JSON.stringify(newPinState));
-    } catch (error) {
-      console.error('Failed to toggle pin state:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!ready || !isTauri()) return;
+    invoke('set_pinned', { pinned: isPinned }).catch((error) => {
+      console.error('Failed to set pinned:', error);
+    });
+  }, [ready, isPinned]);
 
-  // 恢复Pin状态（应用启动时）
-  const restorePinState = async () => {
-    try {
-      const savedState = localStorage.getItem('focuspin-pinned');
-      if (savedState) {
-        const pinState = JSON.parse(savedState);
-        await invoke('set_always_on_top', { alwaysOnTop: pinState });
-        setIsPinned(pinState);
-      }
-    } catch (error) {
-      console.error('Failed to restore pin state:', error);
-    }
-  };
+  const togglePin = useCallback(() => {
+    setIsPinned((pinned) => !pinned);
+  }, [setIsPinned]);
 
-  return {
-    isPinned,
-    isLoading,
-    togglePin,
-    restorePinState
-  };
+  return { isPinned, togglePin, pinSupported };
 }

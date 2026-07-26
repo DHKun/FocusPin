@@ -1,23 +1,22 @@
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useWindowPin } from '../hooks/useWindowPin';
+import { PinIcon, XIcon } from './icons';
 
 interface WindowControlsProps {
   onClose?: () => void;
 }
 
 function WindowControls({ onClose }: WindowControlsProps) {
-  const dragAreaRef = useRef<HTMLDivElement>(null);
-  const { isPinned, isLoading, togglePin } = useWindowPin();
+  const { isPinned, togglePin, pinSupported } = useWindowPin();
 
   // 处理拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // 确保不是点击按钮
-    if ((e.target as HTMLElement).tagName !== 'BUTTON') {
+    if ((e.target as HTMLElement).closest('button') === null) {
       e.preventDefault();
       try {
         const appWindow = getCurrentWindow();
-        appWindow.startDragging().catch(error => {
+        appWindow.startDragging().catch((error) => {
           console.error('Failed to start dragging:', error);
         });
       } catch (error) {
@@ -40,36 +39,30 @@ function WindowControls({ onClose }: WindowControlsProps) {
     }
   }, [onClose]);
 
-  // 处理Pin按钮点击
-  const handlePinClick = useCallback(async () => {
-    await togglePin();
-  }, [togglePin]);
-  
   return (
-    <div 
-      ref={dragAreaRef}
-      className="window-controls"
-      onMouseDown={handleMouseDown}
-    >
-      <button 
-        onClick={handlePinClick}
-        className="window-control-button pin-button"
-        aria-label={isPinned ? "Unpin from desktop" : "Pin to desktop"}
-        disabled={isLoading}
-        style={{
-          fontSize: '16px',
-          opacity: isLoading ? 0.6 : 1,
-          marginRight: '8px'
-        }}
+    <div className="window-controls" onMouseDown={handleMouseDown}>
+      <button
+        onClick={togglePin}
+        className={`window-control-button pin-button${isPinned ? ' pinned' : ''}`}
+        aria-label={isPinned ? 'Unpin from desktop' : 'Pin to desktop'}
+        aria-pressed={isPinned}
+        title={
+          pinSupported
+            ? isPinned
+              ? 'Unpin'
+              : 'Pin on top'
+            : 'Always-on-top is ignored by Wayland; use a KWin window rule instead (see README)'
+        }
       >
-        {isPinned ? '📌' : '📍'}
+        <PinIcon />
       </button>
-      <button 
+      <button
         onClick={handleClose}
         className="window-control-button close-button"
         aria-label="Close"
+        title="Close"
       >
-        ×
+        <XIcon />
       </button>
     </div>
   );

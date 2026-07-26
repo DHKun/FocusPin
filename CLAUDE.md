@@ -4,21 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FocusPin is a modern desktop widget application built with Tauri v2, React 18, and Rust. It features a beautiful glassmorphism design and provides a distraction-free environment for managing tasks and capturing inspirations. **Version 2.0** introduces major UI/UX improvements with true glassmorphism effects.
+FocusPin is a modern desktop widget application built with Tauri v2, React 19, and Rust. It features a beautiful glassmorphism design and provides a distraction-free environment for managing tasks and capturing inspirations. **Version 2.0** introduces major UI/UX improvements with true glassmorphism effects.
 
 ## v2.0 Architecture & Key Components
 
 ### Frontend (React/TypeScript)
-- **Framework**: React 18 with TypeScript
+- **Framework**: React 19 with TypeScript
 - **Design System**: Modern glassmorphism (frosted glass effects) with full transparency
 - **Styling**: CSS variables with responsive design, custom scrollbars, and glass effects
 - **State Management**: React hooks (useState, useEffect, useRef, useCallback)
-- **Data Persistence**: localStorage for all user data (todos, inspirations, pin state)
+- **Data Persistence**: all user data (todos, inspirations, pin state) goes through the Store interface in `src/store/`; the production adapter (tauri-plugin-store) writes `focuspin.json` under the app data dir. Never touch localStorage directly — it is only a legacy migration source (see docs/adr/0001).
 
 ### v2.0 Enhanced Components:
 - `WindowControls.tsx`: Enhanced with Pin/Unpin functionality (📌/📍 buttons)
-- `TodoList.tsx`: Unified input styling, consistent with Ideas module
-- `Inspiration.tsx`: Changed from textarea to input for consistency
+- `ItemList.tsx`: shared list module behind both the Ideas and To-Do cards; configured via props (storeKey, completable, multilineEdit, texts)
 - `GlassCard.tsx`: Reusable glassmorphism card component
 - `ModernCheckbox.tsx`: Custom checkbox with glassmorphism styling
 - `TimestampDisplay.tsx`: Consistent timestamp formatting across modules
@@ -26,7 +25,7 @@ FocusPin is a modern desktop widget application built with Tauri v2, React 18, a
 
 ### Backend (Rust/Tauri v2)
 - **Framework**: Tauri v2 with enhanced window management
-- **New Pin Functionality**: `set_always_on_top` command for desktop widget behavior
+- **WindowChrome module** (`src-tauri/src/window_chrome.rs`): platform window behavior behind two commands, `set_pinned` and `pin_supported`. macOS gets NSVisualEffectView vibrancy + Accessory activation policy; on Wayland always-on-top is best-effort (see docs/adr/0002)
 - **Window Configuration**: 
   - Transparent windows for true glassmorphism
   - Optional always-on-top (controlled by user)
@@ -52,6 +51,12 @@ npm run tauri build
 ```
 Builds the complete Tauri desktop application for distribution.
 
+### Testing
+```bash
+npm test
+```
+Runs the vitest suite (Store contract tests and legacy-data migration tests in `src/store/store.test.ts`).
+
 ### Tauri Development
 ```bash
 npm run tauri dev
@@ -72,15 +77,16 @@ Runs the Tauri application in development mode.
 
 ## v2.0 Design System
 
-### Glassmorphism CSS Variables
+### Design tokens (src/styles/index.css)
 ```css
---glass-bg: rgba(255, 255, 255, 0.75);      /* Semi-transparent white cards */
---glass-border: rgba(255, 255, 255, 0.25);   /* Subtle card borders */
---glass-backdrop: blur(20px) saturate(180%); /* Backdrop filter effects */
---text-primary: #000000;                     /* High contrast text */
---text-secondary: #333333;                   /* Medium contrast text */
---text-tertiary: #666666;                    /* Low contrast text */
+--accent: #007aff;                     /* Apple system blue (dark: #0A84FF) */
+--amber: #ff9500;                      /* Ideas card tone (dark: #FF9F0A) */
+--glass-bg: rgba(255, 255, 255, 0.66); /* Glass card; dark variant defined */
+--glass-backdrop: blur(24px) saturate(170%);
+--fill: rgba(120, 120, 128, 0.12);     /* Apple systemFill: controls, row hover */
+--text-primary / --text-secondary / --text-tertiary  /* label hierarchy */
 ```
+Light and dark palettes are both defined as tokens; dark mode follows `prefers-color-scheme`. Icons are inline SVGs in `src/components/icons.tsx` (stroke 1.8, round caps) — no emoji in UI.
 
 ### Layout Requirements
 - **Critical**: Ideas section MUST be above Todo section (vertical stack)
@@ -96,6 +102,8 @@ Runs the Tauri application in development mode.
 4. **Unified Components**: Consistent styling across Ideas and Todo inputs
 5. **CSS Variables**: Extensive use of custom properties for maintainable styling
 6. **Responsive Behavior**: Proper media queries for different window sizes
+7. **Persistence via the Store seam**: components use `usePersistentState` from `src/store`; item `createdAt` is an ISO 8601 string, never a `Date` object
+8. **No inline styles**: all styling lives in `src/styles/index.css` (tokens + one class per element); JSX carries class names only
 
 ## v2.0 Project Structure
 
@@ -106,16 +114,17 @@ src/                 # React frontend
 │   ├── ModernCheckbox.tsx    # Custom glass-style checkbox
 │   ├── TimestampDisplay.tsx  # Consistent timestamp component
 │   ├── WindowControls.tsx    # Enhanced with Pin functionality
-│   ├── TodoList.tsx          # Unified input styling
-│   └── Inspiration.tsx       # Changed to input consistency
+│   └── ItemList.tsx          # Shared list module (Ideas + To-Do)
 ├── hooks/           # Custom React hooks (new in v2.0)
 │   └── useWindowPin.ts       # Pin state management hook
+├── store/           # Store seam: schema, adapters (tauri/web/memory), migration, usePersistentState
 ├── styles/          # Enhanced CSS styling
 │   └── index.css             # Glassmorphism design system
 └── App.tsx          # Main application component
 src-tauri/           # Tauri v2 backend
 ├── src/             # Rust source code
-│   ├── lib.rs               # Pin functionality implementation
+│   ├── lib.rs               # Builder wiring (plugins, commands, setup)
+│   ├── window_chrome.rs     # Platform window effects: pin, vibrancy, activation policy
 │   └── main.rs              # Application entry point
 ├── capabilities/    # Enhanced Tauri security capabilities
 ├── icons/           # Application icons
@@ -134,9 +143,9 @@ CLAUDE.md            # This file (updated for v2.0)
 - **Widget Mode**: True desktop widget experience without interfering with other apps
 
 ### Glassmorphism Requirements
-- **Background**: App background must be `transparent` 
-- **Cards**: Use `rgba(255, 255, 255, 0.75)` with `backdrop-filter: blur(20px)`
-- **Text**: High contrast colors (`#000000`, `#333333`, `#666666`)
+- **Background**: App background must be `transparent`
+- **Cards**: use the glass tokens (`--glass-bg`, `--glass-backdrop`); never hardcode colors in components
+- **Text**: three-level label hierarchy via tokens; both light and dark palettes must stay legible
 - **Layout**: Vertical stacking - Ideas above, Todo below
 
 ### Input Field Consistency

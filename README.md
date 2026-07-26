@@ -9,7 +9,7 @@ FocusPin 是一款优雅的桌面小组件应用程序，采用现代化的玻�
 ## ✨ v2.0 新特性
 
 ### 🎨 现代化设计升级
-- **真正的玻璃拟态效果**：半透明白色卡片，桌面背景模糊效果
+- **真正的玻璃拟态效果**：半透明白色卡片；macOS 下整窗系统级毛玻璃（vibrancy），其他平台为透明窗口
 - **完美的布局**：Ideas在上，Todo在下的垂直布局设计
 - **统一的用户界面**：输入框样式完全统一，视觉体验一致
 - **美化的滚动条**：与玻璃设计完美融合的自定义滚动条
@@ -46,8 +46,17 @@ FocusPin 是一款优雅的桌面小组件应用程序，采用现代化的玻�
 - **键盘快捷键**：
   - `Enter` 保存编辑/添加项目
   - `Escape` 取消编辑
-  - `Ctrl+Shift+F` 全局快捷键显示/隐藏窗口
 - **极简界面**：纯净的玻璃拟态设计，零干扰体验
+
+### 🖥️ Linux 置顶说明（Wayland）
+
+Wayland 会话下（GNOME 和 KDE Plasma 的默认会话），窗口置顶由合成器管理，应用无法自行置顶，图钉按钮会提示这一点。KDE Plasma 可以用窗口规则实现同样效果：
+
+1. 系统设置 → 窗口管理 → 窗口规则 → 新建规则
+2. 匹配窗口类 `FocusPin`
+3. 添加属性「保持在其他窗口上方」，设为「强制」+「是」
+
+X11 会话和 macOS 下图钉按钮直接生效。
 
 ## 🚀 安装
 
@@ -93,6 +102,11 @@ FocusPin 是一款优雅的桌面小组件应用程序，采用现代化的玻�
 
 即将推出！适用于 Windows、macOS 和 Linux 的预编译二进制文件将在未来的版本中提供。
 
+## 🔧 故障排除
+
+- **启动即崩溃，日志包含 `Error 71 ... Wayland display`**：WebKitGTK 的 DMA-BUF 渲染与 NVIDIA/Wayland 组合存在缺陷。应用启动时已自动设置 `WEBKIT_DISABLE_DMABUF_RENDERER=1` 规避；如需恢复 DMA-BUF 渲染，启动前把该变量显式设为 `0`。
+- **`Failed to load module "appmenu-gtk-module"`**：KDE 全局菜单模块缺失的无害提示，可忽略。
+
 ## 🛠️ 开发
 
 ### 项目结构
@@ -101,19 +115,20 @@ FocusPin/
 ├── src/                    # 前端 React 源代码
 │   ├── components/         # React 组件
 │   │   ├── WindowControls.tsx      # 窗口控制和Pin功能
-│   │   ├── TodoList.tsx            # 任务管理组件
-│   │   ├── Inspiration.tsx         # 灵感记录组件
+│   │   ├── ItemList.tsx            # 条目列表组件 (Ideas与To-Do共用)
 │   │   ├── GlassCard.tsx           # 玻璃卡片组件
 │   │   ├── ModernCheckbox.tsx      # 现代复选框组件
 │   │   └── TimestampDisplay.tsx    # 时间戳显示组件
 │   ├── hooks/                      # 自定义Hook
 │   │   └── useWindowPin.ts         # Pin状态管理Hook
+│   ├── store/                      # Store 接缝 (schema/适配器/迁移/持久化Hook)
 │   ├── styles/            # CSS样式 (玻璃拟态设计)
 │   │   └── index.css      # 主样式文件
 │   └── App.tsx             # 主App组件
 ├── src-tauri/             # Tauri v2 后端源代码
 │   ├── src/               # Rust源文件
-│   │   ├── lib.rs         # Pin功能Rust实现
+│   │   ├── lib.rs         # 插件与命令装配
+│   │   ├── window_chrome.rs # 平台窗口效果 (置顶/毛玻璃/Dock策略)
 │   │   └── main.rs        # 主程序入口
 │   ├── tauri.conf.json   # Tauri v2配置 (透明窗口)
 │   └── target/            # 构建产物
