@@ -1,76 +1,75 @@
 /* ============================================================
-   FocusPin 设计系统
-   参照 Apple 桌面小组件语言:系统色板、hairline、圆形复选框、
-   克制的动效。所有视觉改动从 tokens 开始。
+   FocusPin 设计系统 v3.1
+   依据调研落地的三条纪律:
+   1. 单一材质面板(Raycast/Apple 小组件形态),不透明度 ~0.85
+      ——Linux 无法模糊窗口背后,Mica/Acrylic 降级同款做法
+   2. 层级靠留白 + 字重 + hairline(Things/Linear),不靠阴影堆叠
+   3. 强调色一屏一处(Things):仅输入聚焦时点亮
    ============================================================ */
+/* 注意:不要在这里设 color-scheme——WebKitGTK 会因此给文档画不透明画布,
+   毁掉窗口透明。主题由 useTheme 把解析好的 data-theme 打在根元素上。 */
 :root {
-  /* 强调色(Apple system palette) */
   --accent: #007aff;
-  --amber: #ff9500;
+  --amber: #e08700;
   --danger: #ff3b30;
   --ring: rgba(0, 122, 255, 0.45);
 
-  /* 玻璃面板 */
-  --glass-bg: rgba(255, 255, 255, 0.66);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-backdrop: blur(24px) saturate(170%);
-  --glass-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.04),
-    0 10px 30px rgba(0, 0, 0, 0.12);
-  --glass-radius: 18px;
+  /* 面板材质:仿 Acrylic 磨砂 = 高不透明 tint + 顶部光泽 + 噪点颗粒 */
+  --surface: rgba(248, 248, 250, 0.94);
+  --surface-opaque: #f4f4f6;
+  --sheen: rgba(255, 255, 255, 0.45);
+  --panel-border: rgba(0, 0, 0, 0.09);
+  --panel-highlight: rgba(255, 255, 255, 0.6);
+  /* Acrylic 配方的 noise 层:feTurbulence 平铺,~3% 不透明度 */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
 
-  /* 填充与分隔(Apple systemFill / separator) */
-  --fill: rgba(120, 120, 128, 0.12);
-  --fill-strong: rgba(120, 120, 128, 0.2);
-  --separator: rgba(60, 60, 67, 0.12);
+  /* 填充与分隔 */
+  --fill: rgba(120, 120, 128, 0.1);
+  --fill-strong: rgba(120, 120, 128, 0.16);
+  --separator: rgba(60, 60, 67, 0.1);
 
-  /* 文本层次(label / secondaryLabel / tertiaryLabel) */
-  --text-primary: rgba(0, 0, 0, 0.85);
-  --text-secondary: rgba(60, 60, 67, 0.6);
-  --text-tertiary: rgba(60, 60, 67, 0.35);
+  /* 文本三级(压玻璃需高对比,主文本 ≥4.5:1) */
+  --text-primary: rgba(0, 0, 0, 0.88);
+  --text-secondary: rgba(60, 60, 67, 0.65);
+  --text-tertiary: rgba(60, 60, 67, 0.4);
 
-  /* 字号 */
-  --text-title: 15px;
+  /* 字号:HIG 小组件区间 12–15 */
   --text-body: 13px;
   --text-caption: 11px;
 
-  /* 间距与圆角 */
+  /* 间距与圆角(控件 8、行 8、面板 20) */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
   --spacing-lg: 16px;
-  --spacing-xl: 20px;
-  --radius-control: 9px;
-  --radius-row: 10px;
+  --radius-control: 8px;
+  --radius-row: 8px;
+  --radius-panel: 20px;
   --radius-round: 999px;
 
-  /* 动效 */
+  /* 动效:150ms 默认,无装饰动画 */
   --duration-fast: 0.15s;
-  --duration-slow: 0.4s;
-  --ease-soft: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #0a84ff;
-    --amber: #ff9f0a;
-    --danger: #ff453a;
-    --ring: rgba(10, 132, 255, 0.5);
+:root[data-theme='dark'] {
+  --accent: #0a84ff;
+  --amber: #ff9f0a;
+  --danger: #ff453a;
+  --ring: rgba(10, 132, 255, 0.5);
 
-    --glass-bg: rgba(30, 30, 32, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow:
-      0 1px 1px rgba(0, 0, 0, 0.2),
-      0 10px 30px rgba(0, 0, 0, 0.4);
+  --surface: rgba(29, 29, 33, 0.94);
+  --surface-opaque: #1d1d21;
+  --sheen: rgba(255, 255, 255, 0.06);
+  --panel-border: rgba(255, 255, 255, 0.14);
+  --panel-highlight: rgba(255, 255, 255, 0.1);
 
-    --fill: rgba(120, 120, 128, 0.24);
-    --fill-strong: rgba(120, 120, 128, 0.36);
-    --separator: rgba(84, 84, 88, 0.4);
+  --fill: rgba(120, 120, 128, 0.18);
+  --fill-strong: rgba(120, 120, 128, 0.28);
+  --separator: rgba(255, 255, 255, 0.08);
 
-    --text-primary: rgba(255, 255, 255, 0.92);
-    --text-secondary: rgba(235, 235, 245, 0.6);
-    --text-tertiary: rgba(235, 235, 245, 0.32);
-  }
+  --text-primary: #f4f4f6;
+  --text-secondary: rgba(235, 235, 245, 0.62);
+  --text-tertiary: rgba(235, 235, 245, 0.35);
 }
 
 /* ============================================================
@@ -84,7 +83,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  background: transparent; /* 桌面小组件:真透明 */
+  background: transparent;
   color: var(--text-primary);
   font-size: var(--text-body);
   letter-spacing: -0.1px;
@@ -106,9 +105,9 @@ body {
 button {
   font-family: inherit;
   letter-spacing: inherit;
+  cursor: default; /* 桌面应用不用手型光标(Raycast 原则) */
 }
 
-/* 细滚动条,轨道透明 */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -126,17 +125,14 @@ button {
   background: rgba(120, 120, 128, 0.5);
 }
 
-/* ============================================================
-   动画
-   ============================================================ */
-@keyframes cardIn {
+@keyframes panelIn {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.98);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -150,7 +146,7 @@ button {
 }
 
 .fade-in {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.18s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -163,52 +159,44 @@ button {
 }
 
 /* ============================================================
-   布局
+   面板:材质画在永不滚动的 #root 上。
+   不要把材质层挪到 body(body 背景会传播成整窗画布)或任何
+   含滚动子元素的容器上——WebKitGTK 共享内存渲染下会合成出错。
    ============================================================ */
-.app {
-  padding: 12px var(--spacing-lg) var(--spacing-lg);
-  position: relative;
+#root {
   height: 100vh;
   width: 100vw;
   box-sizing: border-box;
+  overflow: hidden;
+  background-color: var(--surface);
+  background-image: var(--noise), linear-gradient(var(--sheen), transparent 38%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-panel);
+  box-shadow: inset 0 1px 0 var(--panel-highlight); /* 顶缘高光,暗壁纸上勾出轮廓 */
+  /* 不要给 #root 加动画:fill 状态会让这层永远处于"动画中",
+     WebKitGTK 换主题时图层缓存不失效,产生旧主题残影 */
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #root {
+    background-color: var(--surface-opaque);
+  }
+}
+
+/* 布局层:透明,不滚动;滚动只发生在列表内部 */
+.app {
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 14px var(--spacing-lg) var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  overflow-y: auto;
-  background: transparent;
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 26px;
-  padding: 0 64px 0 2px; /* 右侧留出窗口按钮位置 */
-}
-
-.app-logo {
-  font-size: 14px;
-  color: var(--accent);
-  flex: none;
-}
-
-.app-title {
-  font-size: var(--text-title);
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.cards-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  flex: 1;
+  overflow: hidden;
+  animation: panelIn 0.25s ease-out backwards; /* backwards:结束后不保留动画状态 */
 }
 
 /* ============================================================
-   窗口控制
+   窗口控制:右上角幽灵按钮,整条顶带可拖动
    ============================================================ */
 .window-controls {
   position: absolute;
@@ -221,8 +209,8 @@ button {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  gap: 6px;
-  padding: 11px var(--spacing-lg) 0 0;
+  gap: 4px;
+  padding: 10px 12px 0 0;
   box-sizing: border-box;
   -webkit-app-region: drag;
   user-select: none;
@@ -232,12 +220,11 @@ button {
   -webkit-app-region: no-drag;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 14px;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-round);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-control);
   display: grid;
   place-items: center;
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
@@ -246,17 +233,16 @@ button {
 
 .window-control-button:hover {
   background: var(--fill);
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .close-button:hover {
-  background: rgba(255, 59, 48, 0.15);
+  background: rgba(255, 59, 48, 0.14);
   color: var(--danger);
 }
 
 .pin-button.pinned {
   color: var(--accent);
-  background: var(--fill);
 }
 
 .pin-button.pinned svg {
@@ -264,37 +250,39 @@ button {
 }
 
 /* ============================================================
-   毛玻璃卡片
+   分区:留白 + 小标题,不再是嵌套卡片(Things 式)
    ============================================================ */
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  flex: 1;
+  min-height: 0;
+}
+
+/* 两个分区平分面板高度,空间由 flex 分配而不是留成空洞 */
 .glass-card {
-  background: var(--glass-bg);
-  border-radius: var(--glass-radius);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-backdrop);
-  -webkit-backdrop-filter: var(--glass-backdrop);
-  box-shadow: var(--glass-shadow);
-  padding: 14px var(--spacing-lg);
-  animation: cardIn var(--duration-slow) var(--ease-soft) both;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
-.glass-card.slide-up {
-  animation-delay: 0.05s;
-}
-
-.glass-card:nth-child(2).slide-up {
-  animation-delay: 0.12s;
+.glass-card + .glass-card {
+  border-top: 1px solid var(--separator);
+  padding-top: var(--spacing-md);
 }
 
 .card-title {
-  font-size: var(--text-body);
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: -0.1px;
+  letter-spacing: 0.1px;
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-sm) 2px;
   text-align: left;
+  padding-right: 56px; /* 首个分区标题与右上按钮同排,避让 */
 }
 
-/* 卡片色调:Ideas 琥珀,To-Do 蓝(Apple Notes / Reminders) */
 .card-ideas .card-title {
   color: var(--amber);
 }
@@ -306,13 +294,16 @@ button {
 .card-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ============================================================
    条目列表(ItemList)
    ============================================================ */
 .item-list-container {
-  min-height: 96px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -321,15 +312,17 @@ button {
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .modern-input,
 .edit-field {
+  appearance: none;
+  -webkit-appearance: none;
   flex: 1;
   min-width: 0;
   box-sizing: border-box;
-  padding: 7px 10px;
+  padding: 6px 10px;
   border-radius: var(--radius-control);
   border: 1px solid transparent;
   background: var(--fill);
@@ -338,9 +331,9 @@ button {
   font-size: var(--text-body);
   letter-spacing: inherit;
   outline: none;
-  transition: background var(--duration-fast) ease, box-shadow var(--duration-fast) ease,
-    border-color var(--duration-fast) ease;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
   user-select: text;
+  cursor: text;
 }
 
 .modern-input::placeholder,
@@ -348,86 +341,91 @@ button {
   color: var(--text-tertiary);
 }
 
-.modern-input:hover,
-.edit-field:hover {
-  background: var(--fill-strong);
-}
-
+/* 聚焦不用彩色光环,换更强的 hairline(Raycast 式) */
 .modern-input:focus,
 .edit-field:focus {
-  background: var(--fill);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
+  background: var(--fill-strong);
+  border-color: var(--panel-border);
 }
 
+/* 强调色一屏一处:添加按钮平时安静,输入聚焦时点亮 */
 .add-button {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: var(--radius-round);
   border: none;
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
+  background: var(--fill);
+  color: var(--text-secondary);
+  font-size: 13px;
   display: grid;
   place-items: center;
-  transition: transform var(--duration-fast) ease, filter var(--duration-fast) ease;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
 .add-button:hover {
-  filter: brightness(1.1);
+  background: var(--fill-strong);
+}
+
+.input-row:focus-within .add-button {
+  background: var(--accent);
+  color: white;
 }
 
 .add-button:active {
   transform: scale(0.94);
-  filter: brightness(0.95);
 }
 
 .item-stats {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 2px var(--spacing-xs);
+  min-height: 20px;
+  margin: 0 2px;
   font-size: var(--text-caption);
+  letter-spacing: 0.2px;
   color: var(--text-tertiary);
 }
 
 .clear-button {
   border: none;
   background: transparent;
-  color: var(--accent);
-  cursor: pointer;
+  color: var(--text-tertiary);
   font-size: var(--text-caption);
   font-weight: 500;
+  letter-spacing: 0.2px;
   padding: 2px 6px;
   border-radius: 6px;
-  transition: background var(--duration-fast) ease;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
 .clear-button:hover {
   background: var(--fill);
+  color: var(--text-secondary);
 }
 
 .item-list {
   flex: 1;
-  max-height: 300px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
+  margin-top: 2px;
 }
 
 .empty-message {
-  padding: var(--spacing-xl);
+  margin: auto; /* 空态居中在本分区内 */
   text-align: center;
   color: var(--text-tertiary);
-  font-size: var(--text-body);
+  font-size: 12px;
 }
 
-/* 行:无分隔线,悬浮时整行填充,操作按钮浮现 */
 .item {
-  padding: 7px var(--spacing-sm);
-  margin: 0 calc(-1 * var(--spacing-sm));
+  padding: 7px 10px;
+  margin: 0 -10px;
   border-radius: var(--radius-row);
   transition: background var(--duration-fast) ease;
 }
@@ -469,11 +467,10 @@ button {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 13px;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
@@ -485,30 +482,29 @@ button {
 }
 
 .delete-button:hover {
-  background: rgba(255, 59, 48, 0.15);
+  background: rgba(255, 59, 48, 0.14);
   color: var(--danger);
 }
 
 .item-meta {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .item-meta-indent {
-  margin-left: 28px; /* 复选框 20px + 间距 8px,与文字对齐 */
+  margin-left: 26px; /* 复选框 18px + 间距 8px,与文字对齐 */
 }
 
 .item-meta-right {
   text-align: right;
 }
 
-/* 编辑态 */
 .edit-field {
   width: 100%;
   margin-bottom: var(--spacing-sm);
 }
 
 .edit-textarea {
-  min-height: 72px;
+  min-height: 64px;
   resize: vertical;
 }
 
@@ -522,16 +518,16 @@ button {
   border: none;
   background: var(--accent);
   color: white;
-  cursor: pointer;
   font-size: var(--text-caption);
   font-weight: 600;
-  padding: 5px 12px;
+  letter-spacing: 0.2px;
+  padding: 4px 12px;
   border-radius: var(--radius-round);
   transition: filter var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
 .save-button:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .save-button:active {
@@ -542,10 +538,10 @@ button {
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  cursor: pointer;
   font-size: var(--text-caption);
   font-weight: 500;
-  padding: 5px 10px;
+  letter-spacing: 0.2px;
+  padding: 4px 10px;
   border-radius: var(--radius-round);
   transition: background var(--duration-fast) ease;
 }
@@ -555,25 +551,24 @@ button {
 }
 
 /* ============================================================
-   复选框(iOS 提醒事项风格:圆形)
+   复选框:18px 圆形(Reminders 空圈,勾选填充强调色)
    ============================================================ */
 .modern-checkbox {
   appearance: none;
   -webkit-appearance: none;
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   margin: 0;
   border: 1.5px solid var(--text-tertiary);
   border-radius: var(--radius-round);
   background: transparent;
-  cursor: pointer;
   transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
   position: relative;
 }
 
 .modern-checkbox:hover {
-  border-color: var(--accent);
+  border-color: var(--text-secondary);
 }
 
 .modern-checkbox:checked {
@@ -584,10 +579,10 @@ button {
 .modern-checkbox:checked::after {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 2.5px;
+  left: 5px;
+  top: 1.5px;
   width: 4px;
-  height: 9px;
+  height: 8px;
   border: solid white;
   border-width: 0 1.5px 1.5px 0;
   transform: rotate(45deg);
@@ -597,7 +592,6 @@ button {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-sm);
-  cursor: pointer;
   flex: 1;
   min-width: 0;
 }
@@ -605,7 +599,6 @@ button {
 .checkbox-label {
   flex: 1;
   line-height: 1.45;
-  padding-top: 1px;
   word-break: break-word;
   color: var(--text-primary);
   transition: color var(--duration-fast) ease;
@@ -621,54 +614,9 @@ button {
    ============================================================ */
 .timestamp {
   font-size: var(--text-caption);
+  letter-spacing: 0.2px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
-/* ============================================================
-   响应式
-   ============================================================ */
-@media (max-height: 500px) {
-  .app {
-    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .cards-container {
-    gap: var(--spacing-sm);
-  }
-
-  .glass-card {
-    padding: var(--spacing-md);
-  }
-
-  .item-list {
-    max-height: 120px;
-  }
-}
-
-@media (min-height: 500px) and (max-height: 800px) {
-  .item-list {
-    max-height: 200px;
-  }
-}
-
-@media (min-height: 800px) {
-  .item-list {
-    max-height: 340px;
-  }
-}
-
-@media (max-width: 280px) {
-  .app {
-    padding: var(--spacing-sm);
-  }
-
-  .glass-card {
-    padding: var(--spacing-md);
-  }
-
-  .input-row {
-    flex-wrap: wrap;
-  }
-}
+/* 窗口固定 350×450 且不可缩放:高度分配全部交给 flex,不用媒体查询 */

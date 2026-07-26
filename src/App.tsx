@@ -2,17 +2,11 @@ import './styles/index.css';
 import WindowControls from './components/WindowControls';
 import ItemList from './components/ItemList';
 import GlassCard from './components/GlassCard';
-import { PinIcon } from './components/icons';
 
 function App() {
   return (
     <div className="app">
       <WindowControls />
-
-      <header className="app-header">
-        <PinIcon className="app-logo" />
-        <h1 className="app-title">FocusPin</h1>
-      </header>
 
       <div className="cards-container">
         <GlassCard title="Ideas" className="card-ideas" animation="slide-up">

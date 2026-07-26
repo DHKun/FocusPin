@@ -9,10 +9,14 @@ export interface Item {
   completed?: boolean;
 }
 
+// 主题模式:默认跟随系统,手动切换后固定
+export type ThemeMode = 'system' | 'light' | 'dark';
+
 export interface StoreSchema {
   todos: Item[];
   inspirations: Item[];
   pinned: boolean;
+  theme: ThemeMode;
 }
 
 export type StoreKey = keyof StoreSchema;

@@ -5,8 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/src/assets/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FocusPin - Desktop Sticky Notes</title>
-    <script type="module" crossorigin src="../assets/main-DTk4MpdZ.js"></script>
-    <link rel="stylesheet" crossorigin href="../assets/main-DTij02nR.css">
+    <script>
+      // 首帧就按系统偏好定主题,避免暗色环境下闪一下浅色;
+      // 用户手动固定的主题随后由 useTheme 从 Store 恢复
+      document.documentElement.setAttribute(
+        'data-theme',
+        matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      );
+    </script>
+    <script type="module" crossorigin src="../assets/main-DOQVebwT.js"></script>
+    <link rel="stylesheet" crossorigin href="../assets/main-DfOLYtGt.css">
   </head>
   <body>
     <div id="root"></div>

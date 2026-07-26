@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useWindowPin } from '../hooks/useWindowPin';
-import { PinIcon, XIcon } from './icons';
+import { useTheme } from '../hooks/useTheme';
+import { MoonIcon, PinIcon, SunIcon, XIcon } from './icons';
 
 interface WindowControlsProps {
   onClose?: () => void;
@@ -9,6 +10,7 @@ interface WindowControlsProps {
 
 function WindowControls({ onClose }: WindowControlsProps) {
   const { isPinned, togglePin, pinSupported } = useWindowPin();
+  const { isDark, toggleTheme } = useTheme();
 
   // 处理拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -41,6 +43,14 @@ function WindowControls({ onClose }: WindowControlsProps) {
 
   return (
     <div className="window-controls" onMouseDown={handleMouseDown}>
+      <button
+        onClick={toggleTheme}
+        className="window-control-button theme-button"
+        aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+        title={isDark ? 'Light theme' : 'Dark theme'}
+      >
+        {isDark ? <SunIcon /> : <MoonIcon />}
+      </button>
       <button
         onClick={togglePin}
         className={`window-control-button pin-button${isPinned ? ' pinned' : ''}`}

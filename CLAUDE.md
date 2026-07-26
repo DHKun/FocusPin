@@ -78,15 +78,15 @@ Runs the Tauri application in development mode.
 ## v2.0 Design System
 
 ### Design tokens (src/styles/index.css)
+The UI is a single frosted panel with Things-style sections inside (whitespace + small colored headings, no nested cards). Linux cannot blur behind the window, so the frosted look is the Acrylic fallback recipe: high-opacity tint (`--surface`, ~0.94) + top sheen gradient (`--sheen`) + feTurbulence noise layer (`--noise`). Key tokens:
 ```css
---accent: #007aff;                     /* Apple system blue (dark: #0A84FF) */
---amber: #ff9500;                      /* Ideas card tone (dark: #FF9F0A) */
---glass-bg: rgba(255, 255, 255, 0.66); /* Glass card; dark variant defined */
---glass-backdrop: blur(24px) saturate(170%);
---fill: rgba(120, 120, 128, 0.12);     /* Apple systemFill: controls, row hover */
+--accent: #007aff;   /* dark: #0A84FF; one accent per screen — lights up on input focus */
+--amber: #e08700;    /* Ideas heading tone (dark: #FF9F0A) */
+--surface: rgba(250, 250, 251, 0.86);  /* panel material; dark variant defined */
+--fill: rgba(120, 120, 128, 0.1);      /* controls, row hover */
 --text-primary / --text-secondary / --text-tertiary  /* label hierarchy */
 ```
-Light and dark palettes are both defined as tokens; dark mode follows `prefers-color-scheme`. Icons are inline SVGs in `src/components/icons.tsx` (stroke 1.8, round caps) — no emoji in UI.
+Palettes are two token blocks: `:root` (light) and `:root[data-theme='dark']`. Theme defaults to the system preference; the titlebar sun/moon button pins it to light/dark (mode persisted in the Store under `theme`; `useTheme` always writes the resolved `data-theme` onto the root element). **Never set CSS `color-scheme` (or `light-dark()`, which requires it)**: WebKitGTK then paints an opaque document canvas and breaks window transparency. `prefers-reduced-transparency` gets an opaque panel. Icons are inline SVGs in `src/components/icons.tsx` — no emoji in UI.
 
 ### Layout Requirements
 - **Critical**: Ideas section MUST be above Todo section (vertical stack)
@@ -115,8 +115,9 @@ src/                 # React frontend
 │   ├── TimestampDisplay.tsx  # Consistent timestamp component
 │   ├── WindowControls.tsx    # Enhanced with Pin functionality
 │   └── ItemList.tsx          # Shared list module (Ideas + To-Do)
-├── hooks/           # Custom React hooks (new in v2.0)
-│   └── useWindowPin.ts       # Pin state management hook
+├── hooks/           # Custom React hooks
+│   ├── useWindowPin.ts       # Pin state management hook
+│   └── useTheme.ts           # Manual light/dark toggle (default: follow system)
 ├── store/           # Store seam: schema, adapters (tauri/web/memory), migration, usePersistentState
 ├── styles/          # Enhanced CSS styling
 │   └── index.css             # Glassmorphism design system
@@ -142,10 +143,10 @@ CLAUDE.md            # This file (updated for v2.0)
 - **Transparency**: Full application background transparency for desktop integration
 - **Widget Mode**: True desktop widget experience without interfering with other apps
 
-### Glassmorphism Requirements
-- **Background**: App background must be `transparent`
-- **Cards**: use the glass tokens (`--glass-bg`, `--glass-backdrop`); never hardcode colors in components
-- **Text**: three-level label hierarchy via tokens; both light and dark palettes must stay legible
+### Material Requirements
+- **Background**: the window is transparent; the `.app` panel carries the material (`--surface`)
+- **Surfaces**: use `--surface`/`--fill` tokens; never hardcode colors in components
+- **Text**: three-level label hierarchy via tokens; both light and dark palettes must stay legible on any wallpaper
 - **Layout**: Vertical stacking - Ideas above, Todo below
 
 ### Input Field Consistency
