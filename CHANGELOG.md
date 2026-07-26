@@ -5,6 +5,27 @@ All notable changes to FocusPin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-07-26
+
+### Added
+- Light/dark theme toggle in the titlebar (follows system by default; manual choice persisted)
+- Store seam (`src/store`): user data now lives in a real file (`focuspin.json` via tauri-plugin-store) with idempotent migration from the old localStorage data; vitest contract and migration tests
+- WindowChrome module (Rust): `set_pinned` / `pin_supported`; macOS vibrancy + Accessory activation policy
+- Linux packaging targets: AppImage, deb, rpm
+
+### Changed
+- Full visual redesign informed by Things 3 / Linear / Raycast / Apple HIG / Fluent research: single frosted panel (high-opacity tint + sheen + noise), Things-style sections with whitespace, one-accent-per-screen discipline, inline SVG icons instead of emoji
+- TodoList and Inspiration merged into one configurable `ItemList` module; item `createdAt` stored as ISO 8601 string
+- All styling consolidated into design tokens + component classes (zero inline styles)
+
+### Fixed
+- Startup crash on NVIDIA + Wayland (WebKitGTK DMA-BUF, "Error 71"): auto-set `WEBKIT_DISABLE_DMABUF_RENDERER=1`
+- Window transparency destroyed by CSS `color-scheme` on WebKitGTK; stale-paint ghosting when switching themes
+- Window drag falsely triggered by clicks on SVG icons inside buttons
+
+### Removed
+- Four dead components (SettingsPanel, ThemeToggle, GlobalShortcut, ExportButton), unused global-shortcut plugin, `test.html`
+
 ## [2.0.0] - 2025-08-15
 
 ### 🎨 Major Visual Redesign
